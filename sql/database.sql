@@ -1,23 +1,15 @@
-CREATE TABLE keywords (
-    keyword VARCHAR(20) PRIMARY KEY
-);
-
-INSERT INTO keywords (keyword) VALUES ('damage'), ('healing');
-
-CREATE TABLE card_types (
-    type VARCHAR(20) PRIMARY KEY
-);
-
-INSERT INTO card_types (type) VALUES ('monster'), ('magic');
+CREATE TYPE keyword AS ENUM ('damage', 'healing');
+CREATE TYPE card_type AS ENUM ('monster', 'magic');
+CREATE TYPE card_location AS ENUM ('hand', 'deck', 'discard', 'field');
+CREATE TYPE target_type AS ENUM ('self', 'own_monster', 'opponent', 'opponent_monster');
+CREATE TYPE session_status AS ENUM ('waiting', 'ready', 'in_progress', 'completed');
 
 CREATE TABLE cards (
-    id UUID PRIMARY KEY,
+    id SERIAL PRIMARY KEY, 
     name TEXT NOT NULL,
     description TEXT,
-    type VARCHAR(20) NOT NULL,
-    FOREIGN KEY (type) REFERENCES card_types(type)
+    type card_type NOT NULL
 );
-
 CREATE TABLE effect_meta (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
@@ -35,8 +27,81 @@ CREATE TABLE effects (
 CREATE TABLE stats (
     id UUID PRIMARY KEY,
     value INTEGER NOT NULL,
-    keyword VARCHAR(20) NOT NULL,
+    keyword keyword NOT NULL,
+    target_type target_type NOT NULL,
     effect_id UUID NOT NULL,
-    FOREIGN KEY (keyword) REFERENCES keywords(keyword),
     FOREIGN KEY (effect_id) REFERENCES effects(id) ON DELETE CASCADE
+);
+
+CREATE TABLE players (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+);
+
+CREATE TABLE player_boards (
+    id UUID PRIMARY KEY,
+    player_id UUID NOT NULL,
+    health INTEGER NOT NULL,
+    mana INTEGER NOT NULL,
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+);
+
+CREATE TABLE player_board_cards (
+    id UUID PRIMARY KEY,
+    player_board_id UUID NOT NULL,
+    card_id UUID NOT NULL,
+    location card_location NOT NULL,
+    FOREIGN KEY (player_board_id) REFERENCES player_boards(id) ON DELETE CASCADE,
+    FOREIGN KEY (card_id) REFERENCES cards(id)
+);
+
+CREATE TABLE game_boards (
+    session_id UUID PRIMARY KEY,
+    turn INTEGER NOT NULL,
+    current_player_id UUID NOT NULL,
+    FOREIGN KEY (current_player_id) REFERENCES players(id)
+);
+
+CREATE TABLE game_board_players (
+    game_board_id UUID NOT NULL,
+    player_board_id UUID NOT NULL,
+    PRIMARY KEY (game_board_id, player_board_id),
+    FOREIGN KEY (game_board_id) REFERENCES game_boards(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (player_board_id) REFERENCES player_boards(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE sessions (
+    id UUID PRIMARY KEY,
+    host_player_id UUID NOT NULL,
+    status session_status NOT NULL DEFAULT 'waiting',
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (host_player_id) REFERENCES players(id) ON DELETE CASCADE
+);
+
+CREATE TABLE session_players (
+    session_id UUID NOT NULL,
+    player_id UUID NOT NULL,
+    joined_at TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (session_id, player_id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+);
+
+CREATE TABLE decks (
+    id UUID PRIMARY KEY,
+    player_id UUID NOT NULL,
+    session_id UUID NOT NULL,
+    card_ids INTEGER[] NOT NULL, 
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE game_boards (
+    id UUID PRIMARY KEY,
+    session_id UUID NOT NULL,
+    turn INTEGER NOT NULL DEFAULT 1,
+    current_player_id UUID NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (current_player_id) REFERENCES players(id)
 );

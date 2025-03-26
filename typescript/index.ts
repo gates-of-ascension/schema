@@ -1,18 +1,37 @@
+// Enums
+
 export const keywords = ["damage", "healing"] as const;
 export type Keyword = (typeof keywords)[number];
 
 export const cardTypes = ["monster", "magic"] as const;
-export type CardTypes = (typeof cardTypes)[number];
+export type CardType = (typeof cardTypes)[number];
 
-export interface Stat {
-  id: string;
-  value: number;
-  keyword: Keyword;
-}
+export const cardLocations = ["hand", "deck", "discard", "field"] as const;
+export type CardLocation = (typeof cardTypes)[number];
 
-export interface Effect {
+export const targetTypes = [
+  "self",
+  "own_monster",
+  "opponent",
+  "opponent_monster",
+] as const;
+export type TargetType = (typeof targetTypes)[number];
+
+export const sessionStatus = [
+  "waiting",
+  "ready",
+  "in_progress",
+  "completed",
+] as const;
+export type SessionStatus = (typeof sessionStatus)[number];
+
+// Card interfaces
+export interface Card {
   id: string;
-  stats: Stat[];
+  name: string;
+  description: string;
+  effectMeta: EffectMeta[];
+  type: CardType;
 }
 
 export interface EffectMeta {
@@ -21,32 +40,41 @@ export interface EffectMeta {
   description: string;
   effects: Effect[];
 }
-export interface Card {
+
+export interface Effect {
   id: string;
-  name: string;
-  description: string;
-  effectMeta: EffectMeta[];
-  type: CardTypes;
+  stats: Stat[];
 }
+
+export interface Stat {
+  id: string;
+  value: number;
+  keyword: Keyword;
+  targetType: TargetType;
+}
+
+// Player interfaces
 
 export interface Player {
   id: string;
   name: string;
-  health: number;
 }
 
-export interface PlayerBoard {
-  hand: Card[];
-  deck: Card[];
-  discard: Card[];
-  field: Card[];
+// Board / Game interfaces
+
+type Board = {
+  [K in (typeof cardLocations)[number]]: Card[];
+};
+
+export interface PlayerBoard extends Board {
   playerId: number;
   mana: number;
+  health: number;
 }
 
 export interface GameBoard {
   sessionId: string;
   playerBoards: PlayerBoard[];
-  currentPlayer: Player;
+  currentPlayerId: number;
   turn: number;
 }
