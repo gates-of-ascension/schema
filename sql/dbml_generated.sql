@@ -37,12 +37,6 @@ CREATE TABLE "player_boards" (
   "mana" INTEGER NOT NULL
 );
 
-CREATE TABLE "player_board_cards" (
-  "id" UUID PRIMARY KEY,
-  "player_board_id" UUID NOT NULL,
-  "card_id" UUID NOT NULL,
-  "location" card_location NOT NULL
-);
 
 CREATE TABLE "cards" (
   "id" UUID PRIMARY KEY,
@@ -95,10 +89,6 @@ ALTER TABLE "game_boards" ADD FOREIGN KEY ("session_id") REFERENCES "sessions" (
 ALTER TABLE "game_boards" ADD FOREIGN KEY ("current_player_id") REFERENCES "players" ("id");
 
 ALTER TABLE "player_boards" ADD FOREIGN KEY ("player_id") REFERENCES "players" ("id");
-
-ALTER TABLE "player_board_cards" ADD FOREIGN KEY ("player_board_id") REFERENCES "player_boards" ("id");
-
-ALTER TABLE "player_board_cards" ADD FOREIGN KEY ("card_id") REFERENCES "cards" ("id");
 
 ALTER TABLE "effect_meta" ADD FOREIGN KEY ("card_id") REFERENCES "cards" ("id");
 

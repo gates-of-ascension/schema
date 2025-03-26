@@ -1,0 +1,46 @@
+# Schema repo
+
+I've generated sql schemas based on the needs of this workflow
+
+- user visits site
+- user logs in
+- user creates session
+  - row in `sessions` created:
+    - id
+    - host_player_id foreign key to players(id)
+    - session_status defaults to 'waiting'
+    - created_at
+  - row in `session_players` created:
+    - session_id
+    - player_id (host player)
+    - joined_at
+- player two joins session
+  - row in `session_players` added for this player.id
+- both players upload deck list
+  - deck list is a list of card ids / card names
+    - row in `decks` created for each player:
+      - id, player_idm session_id
+      - card_ids: list of foreign keys to cards table
+- host clicks ready
+  - row in `sessions` for this session_id changes session_status to `ready`
+  - row in `game_boards` created:
+    - session_id
+    - turn: default 0
+    - current_player_id: defaults to host
+  - row for each player in `player_boards`
+    - id, player_id
+    - health:30, mana:1
+  - row for each player in `game_board_players`
+    - game_board_id: foreign key of game_boards(session_id)
+    - player_board_id foreign key player_boards(id)
+- row in `sessions` for this session_id changes session_status to `in_progress`
+    - session_status & row from `decks` for each player sent back to client
+    - server function which returns `decks` does shuffling prior to send
+- client receives decks
+- on turn 0 a coinflip is done to decide who goes first
+    - `game_boards` row for this session_id updates `current_player_id` to coin toss winner & `turn` incremented to 1
+- game begins
+    - as players move cards between deck -> hand -> field -> discard we update the client side game state
+    - when player health is damaged we update `player_boards` health value for this player
+    - card position, card health track in client
+- game ends
