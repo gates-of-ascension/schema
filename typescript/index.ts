@@ -28,3 +28,25 @@ export interface Card {
   effectMeta: EffectMeta[];
   type: CardTypes;
 }
+
+export interface Player {
+  id: string;
+  name: string;
+  health: number;
+}
+
+export interface PlayerBoard {
+  hand: Card[];
+  deck: Card[];
+  discard: Card[];
+  field: Card[];
+  playerId: number;
+  mana: number;
+}
+
+export interface GameBoard {
+  sessionId: string;
+  playerBoards: PlayerBoard[];
+  currentPlayer: Player;
+  turn: number;
+}
