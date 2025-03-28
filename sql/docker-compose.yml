@@ -1,0 +1,21 @@
+version: '3.8'
+
+
+# For easy local schema testing
+# Run locally via `docker-compose -p local-postgres-gates-of-ascension up -d`
+
+services:
+  local-postgres-gates-of-ascension:
+    container_name: local-postgres-gates-of-ascension
+    image: postgres:17.4-bullseye
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gates_of_ascension
+    ports:
+      - "5432:5432"
+    volumes:
+      - gates_of_ascension_postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  gates_of_ascension_postgres_dev_data:
