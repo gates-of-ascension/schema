@@ -6,6 +6,9 @@ DROP TABLE IF EXISTS user_deck_cards;
 DROP TABLE IF EXISTS user_decks;
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS game_players;
+DROP TABLE IF EXISTS game_state_history;
 
 -- ####### USERS
 CREATE TABLE users (
@@ -45,6 +48,34 @@ CREATE TABLE user_deck_cards (
     , PRIMARY KEY (card_id, user_deck_id)
 	, FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
 	, FOREIGN KEY (user_deck_id) REFERENCES user_decks(id) ON DELETE CASCADE
+);
+-- #######
+
+-- ####### GAMES
+CREATE TABLE games (
+    id UUID PRIMARY KEY DEFAULT UUID_GENERATE_V4()
+    , turns INT NOT NULL DEFAULT 0
+    , is_active BOOLEAN NOT NULL DEFAULT TRUE
+    , created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+    , updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE game_players (
+    game_id UUID NOT NULL
+    , user_id UUID NOT NULL
+    , result VARCHAR(255) NOT NULL
+    , PRIMARY KEY (game_id, user_id)
+    , FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
+    , FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE game_state_history (
+    game_id UUID NOT NULL
+    , state JSONB NOT NULL
+    , turn INT NOT NULL
+    , created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+    , PRIMARY KEY (game_id, created_at)
+    , FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 -- #######
 
