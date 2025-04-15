@@ -2,20 +2,20 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+DROP TABLE IF EXISTS game_players;
+DROP TABLE IF EXISTS game_state_history;
 DROP TABLE IF EXISTS user_deck_cards;
 DROP TABLE IF EXISTS user_decks;
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS games;
-DROP TABLE IF EXISTS game_players;
-DROP TABLE IF EXISTS game_state_history;
 
 -- ####### USERS
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT UUID_GENERATE_V4()
     , display_name VARCHAR(255) NOT NULL
-    , username VARCHAR(255) NOT NULL -- plain text for now, hash/security later
-    , password VARCHAR(255) NOT NULL -- plain text for now, hash/security later
+    , username VARCHAR(255) NOT NULL
+    , password VARCHAR(255) NOT NULL
     , created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
     , updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -70,11 +70,10 @@ CREATE TABLE game_players (
 );
 
 CREATE TABLE game_state_history (
-    game_id UUID NOT NULL
+    game_id UUID NOT NULL PRIMARY KEY
     , state JSONB NOT NULL
     , turn INT NOT NULL
     , created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
-    , PRIMARY KEY (game_id, created_at)
     , FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 -- #######
