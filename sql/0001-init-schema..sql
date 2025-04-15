@@ -72,7 +72,6 @@ CREATE TABLE game_players (
 CREATE TABLE game_state_history (
     game_id UUID NOT NULL PRIMARY KEY
     , state JSONB NOT NULL
-    , turn INT NOT NULL
     , created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
     , FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
